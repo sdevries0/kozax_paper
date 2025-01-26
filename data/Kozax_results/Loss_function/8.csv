@@ -1,0 +1,6 @@
+Complexity,Fitness,Equation 0
+1,0.45499998,0.478
+5,0.02899997,pred*(0.478 - y)
+7,0.023999944,pred + 0.691*y/pred
+9,0.02349995,pred**2*(pred - y - 0.185)
+11,0.022499949,pred*(pred + y)*(pred - y - 0.245)

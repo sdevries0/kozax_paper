@@ -1,0 +1,8 @@
+Complexity,Fitness,Equation 0
+1,0.49749994,pred
+4,0.44799995,log(pred - 0.292)
+5,0.024999961,pred + y/pred
+6,0.012499943,pred + exp(-pred + y)
+8,0.011499956,0.00101*pred + 0.00101*exp(-pred + y)
+10,0.010999963,pred + exp(-0.974*pred + y) - 0.317
+11,0.010999948,3.04*exp(pred - y*log(pred))
