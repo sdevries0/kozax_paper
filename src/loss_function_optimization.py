@@ -1,7 +1,7 @@
 """
-kozax: Genetic programming framework in JAX
+Kozax: Flexible and Scalable Genetic Programming in JAX
 
-Copyright (c) 2024 sdevries0
+Copyright (c) 2024
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -100,51 +100,52 @@ def generate_keys(key, batch_size=4):
     key1, key2, key3 = jr.split(key, 3)
     return jr.split(key1, batch_size), jr.split(key2, batch_size), jr.split(key3, batch_size)
 
-population_size = 100
-num_populations = 10
-num_generations = 50
+def evolve_loss_function():
+    population_size = 100
+    num_populations = 10
+    num_generations = 50
 
-seeds = jnp.arange(10)
+    seeds = jnp.arange(10)
 
-operator_list = [("+", lambda x, y: jnp.add(x, y), 2, 0.5), 
-                 ("-", lambda x, y: jnp.subtract(x, y), 2, 0.5),
-                 ("*", lambda x, y: jnp.multiply(x, y), 2, 0.5),
-                 ("/", lambda x, y: jnp.divide(x, y + 1e-7), 2, 0.1),
-                 ("**", lambda x, y: jnp.power(x, y), 2, 0.1),
-                 ("log", lambda x: jnp.log(x + 1e-7), 1, 0.1),
-                 ("exp", lambda x: jnp.exp(x), 1, 0.1)
-                 ]
+    operator_list = [("+", lambda x, y: jnp.add(x, y), 2, 0.5), 
+                    ("-", lambda x, y: jnp.subtract(x, y), 2, 0.5),
+                    ("*", lambda x, y: jnp.multiply(x, y), 2, 0.5),
+                    ("/", lambda x, y: jnp.divide(x, y + 1e-7), 2, 0.1),
+                    ("**", lambda x, y: jnp.power(x, y), 2, 0.1),
+                    ("log", lambda x: jnp.log(x + 1e-7), 1, 0.1),
+                    ("exp", lambda x: jnp.exp(x), 1, 0.1)
+                    ]
 
-variable_list = [["pred", "y"]]
+    variable_list = [["pred", "y"]]
 
-input_dim = 2
-hidden_dim = 16
-output_dim = 1
+    input_dim = 2
+    hidden_dim = 16
+    output_dim = 1
 
-fitness_function = FitnessFunction(input_dim, hidden_dim, output_dim, learning_rate=0.01, epochs=500)
+    fitness_function = FitnessFunction(input_dim, hidden_dim, output_dim, learning_rate=0.01, epochs=500)
 
-strategy = GeneticProgramming(num_generations, population_size, fitness_function, operator_list, variable_list, num_populations = num_populations,
-            max_nodes = 15, coefficient_optimisation="ES", migration_period=5, device_type='gpu',
-            size_parsimony=0.003, optimise_coefficients_elite=50, ES_n_iterations=1, ES_n_offspring = 20, init_learning_rate=0.2)
+    strategy = GeneticProgramming(num_generations, population_size, fitness_function, operator_list, variable_list, num_populations = num_populations,
+                max_nodes = 15, coefficient_optimisation=None, migration_period=5, size_parsimony=0.003)
 
-for seed in seeds:
-    strategy.reset()
-    key = jr.PRNGKey(seed)
-    print(f"Seed: {seed}")
+    for seed in seeds:
+        strategy.reset()
+        key = jr.PRNGKey(seed)
+        print(f"Seed: {seed}")
 
-    data_key, init_key = jr.split(key)
-    data_keys, test_keys, network_keys = generate_keys(key)
+        data_key, init_key = jr.split(key)
+        data_keys, test_keys, network_keys = generate_keys(data_key)
 
-    population = strategy.initialize_population(init_key)
+        population = strategy.initialize_population(init_key)
 
-    for g in range(num_generations):
-        key, eval_key, sample_key = jr.split(key, 3)
-        fitness, population = strategy.evaluate_population(population, (data_keys, test_keys, network_keys), eval_key)
-        best_fitness, best_solution = strategy.get_statistics(g)
-        print(f"In generation {g+1}, best fitness = {best_fitness:.4f}, best solution = {strategy.to_string(best_solution)}")
+        for g in range(num_generations):
+            key, eval_key, sample_key = jr.split(key, 3)
+            fitness, population = strategy.evaluate_population(population, (data_keys, test_keys, network_keys), eval_key)
 
-        if g < (num_generations-1):
-            
-            population = strategy.evolve(population, fitness, sample_key)
+            if g < (num_generations-1):
+                
+                population = strategy.evolve(population, fitness, sample_key)
 
-    strategy.print_pareto_front(save=True, file_name=f'data/Kozax_results/loss_f/{seed}')
+        strategy.print_pareto_front(save=True, file_name=f'data/Kozax_results/Loss_function/{seed}')
+
+if __name__ == '__main__':
+    evolve_loss_function()

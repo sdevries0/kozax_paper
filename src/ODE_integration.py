@@ -1,7 +1,7 @@
 """
-kozax: Genetic programming framework in JAX
+Kozax: Flexible and Scalable Genetic Programming in JAX
 
-Copyright (c) 2024 sdevries0
+Copyright (c) 2024
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -98,9 +98,9 @@ class Evaluator:
         
         Returns: Predictions and fitness of the candidate
         """
-        return jax.vmap(self.evaluate_time_series, in_axes=[None, 0, None, 0, 0, None])(candidate, *data, tree_evaluator)
+        return jax.vmap(self.evaluate_time_series, in_axes=[None, 0, None, 0, None])(candidate, *data, tree_evaluator)
     
-    def evaluate_time_series(self, candidate: Array, x0: Array, ts: Array, ys: Array, process_noise_key: PRNGKey, tree_evaluator: Callable) -> Tuple[Array, float]:
+    def evaluate_time_series(self, candidate: Array, x0: Array, ts: Array, ys: Array, tree_evaluator: Callable) -> Tuple[Array, float]:
         """Solves the candidate as a differential equation and returns the predictions and fitness
 
         :param candidate: Candidate that is evaluated
@@ -155,45 +155,52 @@ def get_data(key, env, dt, T, batch_size=20):
     
     return x0s, ts, ys
 
-T = 30
-dt = 0.2
-env = LotkaVolterra(0, 0)
+def evolve_LV():
+    T = 30
+    dt = 0.2
+    env = LotkaVolterra()
 
-operator_list = [("+", lambda x, y: jnp.add(x, y), 2, 0.5), 
-                 ("-", lambda x, y: jnp.subtract(x, y), 2, 0.1),
-                 ("*", lambda x, y: jnp.multiply(x, y), 2, 0.5),
-                 ]
+    operator_list = [
+            ("+", lambda x, y: jnp.add(x, y), 2, 0.5), 
+            ("-", lambda x, y: jnp.subtract(x, y), 2, 0.1), 
+            ("*", lambda x, y: jnp.multiply(x, y), 2, 0.5), 
+            ("**", lambda x, y: jnp.power(x, y), 2, 0.1), 
+            ("/", lambda x, y: jnp.divide(x, y), 2, 0.1)
+        ]
 
-variable_list = [["x" + str(i) for i in range(env.n_var)]]
+    variable_list = [["x" + str(i) for i in range(env.n_var)]]
 
-population_size = 200
-num_populations = 10
-num_generations = 150
+    population_size = 200
+    num_populations = 10
+    num_generations = 150
 
-fitness_function = Evaluator(solver=diffrax.Dopri5(), dt0 = 0.01, stepsize_controller=diffrax.PIDController(atol=1e-6, rtol=1e-6, dtmin=0.001), max_steps=300, optimize_dimensions = jnp.array([0]))
+    fitness_function = Evaluator(solver=diffrax.Dopri5(), dt0 = 0.01, stepsize_controller=diffrax.PIDController(atol=1e-6, rtol=1e-6, dtmin=0.001), max_steps=300, optimize_dimensions = jnp.array([0]))
 
-layer_sizes = jnp.array([env.n_var])
+    layer_sizes = jnp.array([env.n_var])
 
-strategy = GeneticProgramming(num_generations, population_size, fitness_function, operator_list, variable_list, layer_sizes, num_populations = num_populations, device_type='gpu',
-                        max_nodes = 15, migration_period=5, coefficient_optimisation="ES", ES_n_offspring = 50, ES_n_iterations = 1, size_parsimony=0.003, 
-                        start_coefficient_optimisation = 0, optimise_coefficients_elite=1000, init_learning_rate=0.1)
+    strategy = GeneticProgramming(num_generations, population_size, fitness_function, operator_list, variable_list, layer_sizes, num_populations = num_populations, backend='gpu',
+                            max_nodes = 15, migration_period=5, coefficient_optimisation="ES", ES_n_offspring = 20, ES_n_iterations = 1, size_parsimony=0.003, 
+                            start_coefficient_optimisation = 0, optimise_coefficients_elite=1000, init_learning_rate=0.1)
 
-seeds = jnp.arange(10)
+    seeds = jnp.arange(10)
 
-for seed in seeds:
-    strategy.reset()
+    for seed in seeds:
+        strategy.reset()
 
-    key = jr.PRNGKey(seed)
-    key, init_key, data_key = jr.split(key, 3)
-    x0s, ts, ys = get_data(data_key, env, dt=dt, T=T, batch_size=8)
+        key = jr.PRNGKey(seed)
+        key, init_key, data_key = jr.split(key, 3)
+        x0s, ts, ys = get_data(data_key, env, dt=dt, T=T, batch_size=8)
 
-    population = strategy.initialize_population(init_key)
+        population = strategy.initialize_population(init_key)
 
-    for g in range(num_generations):
-        key, eval_key, sample_key = jr.split(key, 3)
-        fitness, population = strategy.evaluate_population(population, (x0s, ts, ys), eval_key)
+        for g in range(num_generations):
+            key, eval_key, sample_key = jr.split(key, 3)
+            fitness, population = strategy.evaluate_population(population, (x0s, ts, ys), eval_key)
 
-        if g < (num_generations-1):
-            population = strategy.evolve(population, fitness, sample_key)
+            if g < (num_generations-1):
+                population = strategy.evolve(population, fitness, sample_key)
 
-    strategy.print_pareto_front(save=True, file_name=f'data/Kozax_results/LV_partial/{seed}')
+        strategy.print_pareto_front(save=True, file_name=f'data/Kozax_results/LV_partial/{seed}')
+
+if __name__ == '__main__':
+    evolve_LV()

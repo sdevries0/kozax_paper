@@ -1,7 +1,7 @@
 """
-kozax: Genetic programming framework in JAX
+Kozax: Flexible and Scalable Genetic Programming in JAX
 
-Copyright (c) 2024 sdevries0
+Copyright (c) 2024
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -67,44 +67,6 @@ def get_data(key, env, dt, T, batch_size=20):
     
     return ys, dy
 
-class FitnessFunction:
-    def __call__(self, candidate, data, tree_evaluator):
-        _X, _Y = data
-        pred = jax.vmap(tree_evaluator, in_axes=[None, 0])(candidate, _X)
-        errors = jnp.abs(pred-_Y)/jnp.mean(jnp.abs(_Y))
-        fitness = jnp.mean(errors)
-        return fitness
-    
-def test_kozax(seeds, env, args, operator_list, variable_list = ["x0"]):
-    population_size, num_populations, num_generations = args
-
-    fitness_function = FitnessFunction()
-
-    layer_sizes = jnp.array([env.n_var])
-    strategy = GeneticProgramming(num_generations, population_size, fitness_function, operator_list, variable_list, layer_sizes, num_populations = num_populations,
-                                max_nodes = 15, coefficient_optimisation="ES", migration_period=5, size_parsimony=0.003, start_coefficient_optimisation = 0, 
-                                optimise_coefficients_elite=100, ES_n_iterations=5, ES_n_offspring = 200, init_learning_rate=0.2)
-
-    for seed in seeds:
-        strategy.reset()
-        key = jr.PRNGKey(seed)
-        print(f"Seed: {seed}")
-        key, init_key, data_key = jr.split(key, 3)
-
-        ys, dys = get_data(data_key, env, dt=1.0, T=30, batch_size=1)
-
-        population = strategy.initialize_population(init_key)
-
-        for g in range(num_generations):
-            key, eval_key, sample_key = jr.split(key, 3)
-            fitness, population = strategy.evaluate_population(population, (ys[0], dys[0]), eval_key)
-
-            if g < (num_generations-1):
-                
-                population = strategy.evolve(population, fitness, sample_key)
-
-        strategy.print_pareto_front(save=True, file_name=f'data/Kozax_results/LV_full/{seed}')
-
 def test_pysr(seeds, env, args):
     population_size, num_populations, num_generations = args
 
@@ -131,29 +93,67 @@ def test_pysr(seeds, env, args):
                 verbosity=0
             )
 
-        model.fit(ys[0], dys[0])#, variable_names = variable_list)
+        model.fit(ys[0], dys[0])
 
-def symbolic_regression(seeds, env, method, operator_list, variable_list, args):
+class FitnessFunction:
+    def __call__(self, candidate, data, tree_evaluator):
+        _X, _Y = data
+        pred = jax.vmap(tree_evaluator, in_axes=[None, 0])(candidate, _X)
+        errors = jnp.abs(pred-_Y)/jnp.mean(jnp.abs(_Y))
+        fitness = jnp.mean(errors)
+        return fitness
+    
+def test_kozax(seeds, env, args, operator_list, variable_list = ["x0"]):
+    population_size, num_populations, num_generations = args
+
+    fitness_function = FitnessFunction()
+
+    layer_sizes = jnp.array([env.n_var])
+    strategy = GeneticProgramming(num_generations, population_size, fitness_function, operator_list, variable_list, layer_sizes, num_populations = num_populations,
+                                max_nodes = 15, coefficient_optimisation="ES", migration_period=5, size_parsimony=0.003, start_coefficient_optimisation = 0, 
+                                optimise_coefficients_elite=500, ES_n_iterations=5, ES_n_offspring = 10, init_learning_rate=0.2)
+
+    for seed in seeds:
+        strategy.reset()
+        key = jr.PRNGKey(seed)
+        print(f"Seed: {seed}")
+        key, init_key, data_key = jr.split(key, 3)
+
+        ys, dys = get_data(data_key, env, dt=1.0, T=30, batch_size=1)
+
+        population = strategy.initialize_population(init_key)
+
+        for g in range(num_generations):
+            key, eval_key, sample_key = jr.split(key, 3)
+            fitness, population = strategy.evaluate_population(population, (ys[0], dys[0]), eval_key)
+
+            if g < (num_generations-1):
+                
+                population = strategy.evolve(population, fitness, sample_key)
+
+        strategy.print_pareto_front(save=True, file_name=f'data/Kozax_results/LV_full/{seed}')
+
+if __name__ == '__main__':
+    env = LotkaVolterra()
+
+    operator_list = [("+", lambda x, y: jnp.add(x, y), 2, 0.5), 
+                    ("-", lambda x, y: jnp.subtract(x, y), 2, 0.5),
+                    ("*", lambda x, y: jnp.multiply(x, y), 2, 0.5),
+                    ("**", lambda x, y: jnp.power(x, y), 2, 0.1), 
+                    ("/", lambda x, y: jnp.divide(x, y), 2, 0.1),
+                    ]
+
+    variable_list = [["x" + str(i) for i in range(env.n_var)]]
+
+    seeds = np.arange(10)
+
+    args = [100, 10, 100]
+
+    method = "Kozax"
+    # method = "PySR"
+
     if method=="PySR":
         test_pysr(seeds, env, args)
 
     elif method=="Kozax":
         test_kozax(seeds, env, args, operator_list, variable_list)
-
-env = LotkaVolterra()
-
-operator_list = [("+", lambda x, y: jnp.add(x, y), 2, 0.5), 
-                 ("-", lambda x, y: jnp.subtract(x, y), 2, 0.5),
-                 ("*", lambda x, y: jnp.multiply(x, y), 2, 0.5),
-                 ]
-
-variable_list = [["x" + str(i) for i in range(env.n_var)]]
-
-seeds = np.arange(10)
-
-args = [100, 10, 50]
-
-method = "Kozax"
-# method = "PySR"
-
-symbolic_regression(seeds, env, method, operator_list, variable_list, args)
