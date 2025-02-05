@@ -164,23 +164,23 @@ def evolve_LV():
             ("+", lambda x, y: jnp.add(x, y), 2, 0.5), 
             ("-", lambda x, y: jnp.subtract(x, y), 2, 0.1), 
             ("*", lambda x, y: jnp.multiply(x, y), 2, 0.5), 
-            ("**", lambda x, y: jnp.power(x, y), 2, 0.1), 
-            ("/", lambda x, y: jnp.divide(x, y), 2, 0.1)
+            # ("**", lambda x, y: jnp.power(x, y), 2, 0.1), 
+            # ("/", lambda x, y: jnp.divide(x, y), 2, 0.1)
         ]
 
     variable_list = [["x" + str(i) for i in range(env.n_var)]]
 
     population_size = 200
     num_populations = 10
-    num_generations = 150
+    num_generations = 100
 
     fitness_function = Evaluator(solver=diffrax.Dopri5(), dt0 = 0.01, stepsize_controller=diffrax.PIDController(atol=1e-6, rtol=1e-6, dtmin=0.001), max_steps=300, optimize_dimensions = jnp.array([0]))
 
     layer_sizes = jnp.array([env.n_var])
 
     strategy = GeneticProgramming(num_generations, population_size, fitness_function, operator_list, variable_list, layer_sizes, num_populations = num_populations, backend='gpu',
-                            max_nodes = 15, migration_period=5, coefficient_optimisation="ES", ES_n_offspring = 20, ES_n_iterations = 1, size_parsimony=0.003, 
-                            start_coefficient_optimisation = 0, optimise_coefficients_elite=1000, init_learning_rate=0.1)
+                            max_nodes = 15, migration_period=10, coefficient_optimisation="ES", ES_n_offspring = 40, ES_n_iterations = 5, size_parsimony=0.003, 
+                            start_coefficient_optimisation = 0, optimise_coefficients_elite=500, init_learning_rate=0.2, migration_percentage=0.05)
 
     seeds = jnp.arange(10)
 
@@ -193,14 +193,18 @@ def evolve_LV():
 
         population = strategy.initialize_population(init_key)
 
+        end_ts = int(ts.shape[0]/2)
+
         for g in range(num_generations):
+            if g == 50:
+                end_ts = ts.shape[0]
             key, eval_key, sample_key = jr.split(key, 3)
-            fitness, population = strategy.evaluate_population(population, (x0s, ts, ys), eval_key)
+            fitness, population = strategy.evaluate_population(population, (x0s, ts[:end_ts], ys[:,:end_ts]), eval_key)
 
             if g < (num_generations-1):
                 population = strategy.evolve(population, fitness, sample_key)
 
-        strategy.print_pareto_front(save=True, file_name=f'data/Kozax_results/LV_partial/{seed}')
+        strategy.print_pareto_front(save=True, file_name=f'/data/Kozax_results/LV_partial/{seed}')
 
 if __name__ == '__main__':
     evolve_LV()
