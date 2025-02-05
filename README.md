@@ -13,13 +13,13 @@ conda activate kozax_paper
 
 |Experiment|Code|PySR|Kozax|
 |---|---|---|---|
-|Kepler's third law| [Code](./src/law_discovery.py)|[Data](./data/PySR_results/Kepler)|[Data](./data/Kozax_results/Kepler)|
-|Newton's law of universal gravitation| [Code](./src/law_discovery.py)|[Data](./data/PySR_results/Newton)|[Data](./data/Kozax_results/Newton)|
-|Bode's law| [Code](./src/law_discovery.py)|[Data](./data/PySR_results/Bode)|[Data](./data/Kozax_results/Bode)|
-|Fully observable Lotka-Volterra equations| [Code](./src/finite_differences_method.py)|[Data](./data/PySR_results/LV_full)|[Data](./data/Kozax_results/LV_full)|
-|Partially observable Lotka-Volterra equations| [Code](./src/ODE_integration.py)|-|[Data](./data/Kozax_results/LV_partial)|
-|Acrobot| [Code](./src/symbolic_policy.py)|-|[Data](./data/Kozax_results/Acrobot)|
-|Loss function| [Code](./src/loss_function_optimization.py)|-|[Data](./data/Kozax_results/Loss_function)|
+|Kepler's third law| [Code](src/law_discovery.py)|[Data](data/PySR_results/Kepler)|[Data]()|
+|Newton's law of universal gravitation| [Code](src/law_discovery.py)|[Data](data/PySR_results/Newton)|[Data](data/Kozax_results/Newton)|
+|Bode's law| [Code](src/law_discovery.py)|[Data](data/PySR_results/Bode)|[Data](data/Kozax_results/Bode)|
+|Fully observable Lotka-Volterra equations| [Code](src/finite_differences_method.py)|[Data](data/PySR_results/LV_full)|[Data](data/Kozax_results/LV_full)|
+|Partially observable Lotka-Volterra equations| [Code](src/ODE_integration.py)|-|[Data](data/Kozax_results/LV_partial)|
+|Acrobot| [Code](src/symbolic_policy.py)|-|[Data](data/Kozax_results/Acrobot)|
+|Loss function| [Code](src/loss_function_optimization.py)|-|[Data](data/Kozax_results/Loss_function)|
 
 ## Citation
 If you make use of this code in your research paper, please cite:
