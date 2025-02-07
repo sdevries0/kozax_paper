@@ -1,6 +1,6 @@
 # Kozax: Flexible and Scalable Genetic Programming in JAX
 
-In this repository, you can find the source code and data used for the paper "Kozax: Flexible and Scalable Genetic Programming in JAX". Click [PLACEHOLDER FOR ANONYMOSITY] to read the paper. 
+In this repository, you can find the source code and data used for the paper "Kozax: Flexible and Scalable Genetic Programming in JAX". Click [PLACEHOLDER FOR ANONYMITY] to read the paper. 
 
 ## Build
 To use the code, you can clone the repository and create the environment by running:
@@ -24,5 +24,5 @@ conda activate kozax_paper
 ## Citation
 If you make use of this code in your research paper, please cite:
 ```
-[PLACEHOLDER FOR ANONYMOSITY]
+[PLACEHOLDER FOR ANONYMITY]
 ```
