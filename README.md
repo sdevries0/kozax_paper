@@ -1,6 +1,6 @@
 # Kozax: Flexible and Scalable Genetic Programming in JAX
 
-In this repository, you can find the source code and data used for the paper "Kozax: Flexible and Scalable Genetic Programming in JAX". Click [PLACEHOLDER FOR ANONYMITY] to read the paper. 
+In this repository, you can find the source code and data used for the paper "Kozax: Flexible and Scalable Genetic Programming in JAX". The paper can be found at [https://arxiv.org/abs/2502.03047](https://arxiv.org/abs/2502.03047). 
 
 ## Build
 To use the code, you can clone the repository and create the environment by running:
@@ -24,5 +24,10 @@ conda activate kozax_paper
 ## Citation
 If you make use of this code in your research paper, please cite:
 ```
-[PLACEHOLDER FOR ANONYMITY]
+@article{de2024discovering,
+  title={Discovering Dynamic Symbolic Policies with Genetic Programming},
+  author={de Vries, Sigur and Keemink, Sander and van Gerven, Marcel},
+  journal={arXiv preprint arXiv:2406.02765},
+  year={2024}
+}
 ```
