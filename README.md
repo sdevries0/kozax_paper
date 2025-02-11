@@ -1,6 +1,6 @@
 # Kozax: Flexible and Scalable Genetic Programming in JAX
 
-In this repository, you can find the source code and data used for the paper "Kozax: Flexible and Scalable Genetic Programming in JAX". The paper can be found at [https://arxiv.org/abs/2502.03047](https://arxiv.org/abs/2502.03047). 
+In this repository, you can find the source code and data used for the experiments in the [paper](https://arxiv.org/abs/2502.03047) "Kozax: Flexible and Scalable Genetic Programming in JAX". This paper introduces the Python library [Kozax](https://github.com/sdevries0/Kozax).
 
 ## Build
 To use the code, you can clone the repository and create the environment by running:
