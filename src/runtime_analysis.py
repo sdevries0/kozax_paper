@@ -60,7 +60,7 @@ def clock_pysr(seed, N):
 
 def clock_kozax(seed, N, backend):
     x = jnp.linspace(0, 20, N)[:,None]
-    y = jnp.sin(x) + x
+    y = x**2 - x/3 + 1
 
     class FitnessFunction:
         def __call__(self, candidate, data, tree_evaluator):
