@@ -13,7 +13,7 @@ conda activate kozax_paper
 
 |Experiment|Code|PySR|Kozax|
 |---|---|---|---|
-|Kepler's third law| [Code](src/law_discovery.py)|[Data](data/PySR_results/Kepler)|[Data]()|
+|Kepler's third law| [Code](src/law_discovery.py)|[Data](data/PySR_results/Kepler)|[Data](data/Kozax_results/Kepler)|
 |Newton's law of universal gravitation| [Code](src/law_discovery.py)|[Data](data/PySR_results/Newton)|[Data](data/Kozax_results/Newton)|
 |Bode's law| [Code](src/law_discovery.py)|[Data](data/PySR_results/Bode)|[Data](data/Kozax_results/Bode)|
 |Fully observable Lotka-Volterra equations| [Code](src/finite_differences_method.py)|[Data](data/PySR_results/LV_full)|[Data](data/Kozax_results/LV_full)|
